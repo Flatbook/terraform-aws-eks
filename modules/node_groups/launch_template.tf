@@ -29,12 +29,20 @@ resource "aws_launch_template" "workers" {
   description            = format("EKS Managed Node Group custom LT for %s", local.node_groups_names[each.key])
   update_default_version = true
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   block_device_mappings {
     device_name = "/dev/xvda"
 
     ebs {
       volume_size           = lookup(each.value, "disk_size", null)
       volume_type           = lookup(each.value, "disk_type", null)
+      encrypted             = lookup(each.value, "disk_encrypted", null)
+      kms_key_id            = lookup(each.value, "disk_kms_key_id", null)
       delete_on_termination = true
     }
   }
